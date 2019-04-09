@@ -1,10 +1,11 @@
 <style lang="stylus" scoped>
 .cartcontrol
   font-size: 0
-  .fade-enter-active
-    animation: anim 0.4s linear
-  .fade-leave-active
-    animation: anim 0.4s linear reverse
+  .cart-decrease
+    &.fade-enter-active
+      animation: anim 0.5s
+    &.fade-leave-active
+      animation: anim 0.5s reverse
   .cart-decrease,
   .cart-add
     display: inline-block

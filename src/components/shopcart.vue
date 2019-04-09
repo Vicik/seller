@@ -81,41 +81,44 @@
         font-size: 16px
         font-weight: 700
         &.not-enough
+          padding: 0 8px
           background: #2b333b
         &.enough
           background: #00b43c
           color: #fff
   .ball-container
+    z-index: 300
     .ball
       position: fixed
       left: 32px
       bottom: 22px
       z-index: 200
-      width: 16px
-      height: 16px
-      border-radius: 50%
-      background: rgb(0, 160, 220)
+      // width: 16px
+      // height: 16px
+      // border-radius: 50%
+      // background: rgb(0, 160, 220)
       transition: all 0.4s cubic-bezier(0.49,-0.29,0.75,0.41)
-      // .inner
-      //   width: 16px
-      //   height: 16px
-      //   border-radius: 50%
-      //   background: rgb(0, 160, 220)
-      //   transition: all 0.4s linear
-  .fold-enter-active,.fold-leave-active
-    transition: all 1s linear
-  .fold-enter,.fold-leave-to
-    opacity: 0
-    transform: translate3d(0, 0, 0)
-  .fold-enter-to,.fold-leave
-    opacity: 1
-    transform: translate3d(0, -100%, 0)
+      .inner
+        width: 16px
+        height: 16px
+        border-radius: 50%
+        background: rgb(0, 160, 220)
+        transition: all 0.4s linear
   .shopcart-list
     position: absolute
     top: 0
     left: 0
     z-index: -1
     width: 100%
+    transform translate3d(0, -100%, 0)
+    &.fold-enter-active,&.fold-leave-active
+      transition: all 0.5s linear
+    &.fold-enter,&.fold-leave-to
+      opacity: 0
+      transform: translate3d(0, 0, 0)
+    &.fold-enter-to,&.fold-leave
+      opacity: 1
+      transform: translate3d(0, -100%, 0)
     .list-header
       padding: 0 18px
       height: 40px
@@ -156,62 +159,81 @@
           position: absolute
           right: 0
           bottom: 6px
+.list-mask
+  position: fixed
+  top: 0
+  left: 0
+  width: 100%
+  height: 100%
+  z-index: 30
+  background: rgba(7, 17, 27, 0.6)
+  &.fade-enter-active,&.fade-leave-active
+    transifion: all 0.5s
+  &.fade-enter,.&fade-leave-to
+    opacity: 0
+  &.fade-enter-to,&.fade-leave
+    opacity: 1
 </style>
 
 <template>
-  <div class="shopcart">
-    <div class="content" @click="toggleList">
-      <div class="content-left">
-        <div class="logo-wrapper">
-          <div class="logo" :class="{'highlight': totalCount>0}">
-            <span class="icon-shopping_cart" :class="{'highlight': totalCount>0}"></span>
+  <div class="shopcart-wrapper">
+    <div class="shopcart">
+      <div class="content" @click="toggleList">
+        <div class="content-left">
+          <div class="logo-wrapper">
+            <div class="logo" :class="{'highlight': totalCount>0}">
+              <span class="icon-shopping_cart" :class="{'highlight': totalCount>0}"></span>
+            </div>
+            <div class="num" v-show="totalCount>0">{{totalCount}}</div>
           </div>
-          <div class="num" v-show="totalCount>0">{{totalCount}}</div>
+          <div class="price" :class="{'highlight': totalPrice>0}">￥{{totalPrice}}</div>
+          <div class="desc">另需配送费￥{{deliveryPrice}}元</div>
         </div>
-        <div class="price" :class="{'highlight': totalPrice>0}">￥{{totalPrice}}</div>
-        <div class="desc">另需配送费￥{{deliveryPrice}}元</div>
+        <div class="content-right" @click.stop="pay">
+          <div class="pay" :class="payClass">{{payDesc}}</div>
+        </div>
       </div>
-      <div class="content-right" @click.stop="pay">
-        <div class="pay" :class="payClass">{{payDesc}}</div>
+      <div class="ball-container">
+        <transition-group name="drop" tag="ul"  v-for="(ball, i) in balls" :key="i"
+          @before-enter="beforeEnter"
+          @enter="enter"
+          @after-enter="afterEnter"
+        >
+          <li class="ball" v-show="ball.show" :css="false" :key="ball.id">
+            <div class="inner inner-hook"></div>
+          </li>
+        </transition-group>
       </div>
+      <transition name="fold">
+        <div class="shopcart-list" v-show="listShow">
+          <div class="list-header">
+            <h1 class="title">购物车</h1>
+            <span class="empty" @click="empty">清空</span>
+          </div>
+          <div class="list-content" ref='listContent'>
+            <ul>
+              <li v-for="(food, i) in selectFoods" :key="i" class="food">
+                <span class="name">{{food.name}}</span>
+                <div class="price">
+                  <span>￥{{food.price * food.count}}</span>
+                </div>
+                <div class="cartcontrol-wrapper">
+                  <cartcontrol :food="food"></cartcontrol>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </transition>
     </div>
-    <div class="ball-container">
-      <transition-group tag="ul"
-        @before-enter="beforeEnter"
-        @enter="enter"
-        @after-enter="afterEnter"
-      >
-        <li v-for="ball in balls" :key="ball.id" class="ball" v-show="ball.show" :css="false">
-          <!-- <div class="inner inner-hook"></div> -->
-        </li>
-      </transition-group>
-    </div>
-    <transition name="fold">
-      <div class="shopcart-list" v-show="listShow">
-        <div class="list-header">
-          <h1 class="title">购物车</h1>
-          <span class="empty" @click="empty">清空</span>
-        </div>
-        <div class="list-content" ref='list'>
-          <ul>
-            <li v-for="(food, i) in selectFoods" :key="i" class="food">
-              <span class="name">{{food.name}}</span>
-              <div class="price">
-                <span>￥{{food.price * food.count}}</span>
-              </div>
-              <div class="cartcontrol-wrapper">
-                <cartcontrol :food="food"></cartcontrol>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
+    <transition name="fade">
+      <div class="list-mask" v-show="listShow" @click.stop.prevent="hideList"></div>
     </transition>
   </div>
 </template>
 
 <script>
-// import BScroll from 'better-scroll'
+import BScroll from 'better-scroll'
 import cartcontrol from './cartControl'
 export default {
   props: {
@@ -232,7 +254,7 @@ export default {
   },
   data () {
     return {
-      folder: true,
+      fold: true,
       balls: [
         {
           id: 1,
@@ -264,6 +286,13 @@ export default {
     }
   },
   components: {cartcontrol},
+  watch: {
+    selectedFoods (newFoods, oldFoods) {
+      if (newFoods.length === 0) {
+        this.fold = true
+      }
+    }
+  },
   computed: {
     totalPrice () {
       let total = 0
@@ -300,8 +329,19 @@ export default {
       if (!this.totalCount) {
         return false
       }
-      let show = !this.folder
-      return show
+      if (this.totalCount > 0 && !this.fold) {
+        this.$nextTick(() => {
+          if (!this.scroll) {
+            this.scroll = new BScroll(this.$refs.listContent, {
+              click: true
+            });
+          } else {
+            this.scroll.refresh()
+          }
+        })
+        return true
+      }
+      return false
     }
   },
   methods: {
@@ -309,12 +349,16 @@ export default {
       if (!this.totalCount) {
         return
       }
-      this.folder = !this.folder
+      this.fold = !this.fold
+    },
+    hideList () {
+      this.fold = !this.fold
     },
     empty () {
       this.selectFoods.forEach((food) => {
         food.count = 0
       })
+      this.fold = !this.fold
     },
     pay () {
       if (this.totalPrice < this.minPrice) {
@@ -342,25 +386,26 @@ export default {
           let x = rect.left - 32
           let y = -(window.innerHeight - rect.top - 22)
           el.style.display = ''
-          // el.style.webkitTransform = `translate3d(${x}px,${y}px,0)`
-          el.style.transform = `translate3d(${x}px, ${y}px, 0)`
-          // let inner = el.getElementsByClassName('inner-hook')[0]
-          // inner.style.webkitTransform = `translate3d(${x}px,0,0)`
-          // inner.style.transform = `translate3d(${x}px, 0, 0)`
+          el.style.webkitTransform = `translate3d(0,${y}px,0)`
+          el.style.transform = `translate3d(0, ${y}px, 0)`
+          let inner = el.getElementsByClassName('inner-hook')[0]
+          inner.style.webkitTransform = `translate3d(${x}px,0,0)`
+          inner.style.transform = `translate3d(${x}px, 0, 0)`
         }
       }
     },
-    enter (el) {
+    enter (el, done) {
       /* eslint-disable no-unused-vars */
       let rf = el.offsetHeight
       this.$nextTick(() => {
         el.style.webkitTransform = 'translate3d(0,0,0)'
         el.style.transform = 'translate3d(0, 0, 0)'
-        // let inner = el.getElementsByClassName('inner-hook')[0]
-        // inner.style.webkitTransform = 'translate3d(0,0,0)'
-        // inner.style.transform = 'translate3d(0, 0, 0)'
-        // done()
+        let inner = el.getElementsByClassName('inner-hook')[0]
+        inner.style.webkitTransform = 'translate3d(0,0,0)'
+        inner.style.transform = 'translate3d(0, 0, 0)'
+        // el.addEventListener('transitionend',done)
       })
+      done()
     },
     afterEnter (el) {
       let ball = this.dropBalls.shift()
