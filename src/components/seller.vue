@@ -87,31 +87,10 @@
         .support-item
           padding: 16px 12px
           font-size: 0
+          color: rgb(7, 17, 27)
           border-1px(rgba(7, 17, 27, 0.1))
           &:last-child
             border-none()
-          .icon
-            display: inline-block
-            margin-right: 6px
-            width: 16px
-            height: 16px
-            vertical-align: top
-            background-size: 16px 16px
-            background-repeat: no-repeat
-            &.decrease
-              bg-image('../assets/img/decrease_2')
-            &.discount
-              bg-image('../assets/img/discount_2')
-            &.guarantee
-              bg-image('../assets/img/guarantee_2')
-            &.invoice
-              bg-image('../assets/img/invoice_2')
-            &.special
-              bg-image('../assets/img/special_2')
-          .text
-            line-height: 16px
-            font-size: 12px
-            color: rgb(7, 17, 27)
     .pics
       padding: 18px 0 18px 18px
       .title
@@ -196,10 +175,15 @@
         </div>
         <ul v-if="seller.supports" class="supports">
           <li v-for="(item, i) in seller.supports" :key="i" class="support-item border-1px">
+            <ad size="big" :supports-type="classMap[seller.supports[i].type]" :description="seller.supports[i].description"></ad>
+          </li>
+        </ul>
+        <!-- <ul v-if="seller.supports" class="supports">
+          <li v-for="(item, i) in seller.supports" :key="i" class="support-item border-1px">
             <span class="icon" :class="classMap[seller.supports[i].type]"></span>
             <span class="text">{{seller.supports[i].description}}</span>
           </li>
-        </ul>
+        </ul> -->
       </div>
       <split></split>
       <div class="pics">
@@ -227,6 +211,7 @@
 import BScroll from 'better-scroll'
 import star from './star'
 import split from './split'
+import ad from './ad'
 export default {
   props: {
     seller: {
@@ -274,6 +259,6 @@ export default {
       this.favorite = !this.favorite
     }
   },
-  components: {star, split}
+  components: {star, split, ad}
 }
 </script>

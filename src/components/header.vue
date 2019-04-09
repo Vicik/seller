@@ -38,28 +38,6 @@
         margin-bottom: 10px
         line-height: 12px
         font-size: 12px
-      .support
-        .icon
-          display: inline-block
-          vertical-align: top
-          margin-right: 4px
-          width: 12px
-          height: 12px
-          background-size: 12px 12px
-          background-repeat: no-repeat
-          &.decrease
-            bg-image('../assets/img/decrease_1')
-          &.discount
-            bg-image('../assets/img/discount_1')
-          &.guarantee
-            bg-image('../assets/img/guarantee_1')
-          &.invoice
-            bg-image('../assets/img/invoice_1')
-          &.special
-            bg-image('../assets/img/special_1')
-        .text
-          line-height: 12px
-          font-size: 10px
     .support-count
       position: absolute
       right: 12px
@@ -157,30 +135,9 @@
           .support-item
             padding: 0 12px
             margin-bottom: 12px
-            font-size: 0
+            color: rgb(255, 255, 255)
             &:last-child
               margin-bottom: 0
-            .icon
-              display: inline-block
-              margin-right: 6px
-              width: 16px
-              height: 16px
-              vertical-align: top
-              background-size: 16px 16px
-              background-repeat: no-repeat
-              &.decrease
-                bg-image('../assets/img/decrease_2')
-              &.discount
-                bg-image('../assets/img/discount_2')
-              &.guarantee
-                bg-image('../assets/img/guarantee_2')
-              &.invoice
-                bg-image('../assets/img/invoice_2')
-              &.special
-                bg-image('../assets/img/special_2')
-            .text
-              font-size: 12px
-              line-height: 16px
         .bulletin
           margin: 0 auto
           width: 80%
@@ -212,8 +169,9 @@
           {{seller.description}} / {{seller.deliveryTime}}分钟送达
         </div>
         <div v-if="seller.supports" class="support">
-          <span class="icon" :class="classMap[seller.supports[0].type]"></span>
-          <span class="text">{{seller.supports[0].description}}</span>
+          <ad size="small" :supports-type="classMap[seller.supports[0].type]" :description="seller.supports[0].description"></ad>
+          <!-- <span class="icon" :class="classMap[seller.supports[0].type]"></span>
+          <span class="text">{{seller.supports[0].description}}</span> -->
         </div>
       </div>
       <div v-if="seller.supports"  @click="showDetail" class="support-count">
@@ -242,8 +200,7 @@
           </div>
           <ul v-if="seller.supports" class="supports">
             <li v-for="(item, i) in seller.supports" :key="i" class="support-item">
-              <span class="icon" :class="classMap[seller.supports[i].type]"></span>
-              <span class="text">{{seller.supports[i].description}}</span>
+              <ad size="big" :supports-type="classMap[seller.supports[i].type]" :description="seller.supports[i].description"></ad>
             </li>
           </ul>
           <div class="title">
@@ -265,6 +222,7 @@
 
 <script>
 import star from './star'
+import ad from './ad'
 export default {
   props: {
     seller: {
@@ -272,7 +230,7 @@ export default {
     }
   },
   components: {
-    star
+    star, ad
   },
   created () {
     this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee']

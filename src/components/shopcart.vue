@@ -232,7 +232,7 @@ export default {
   },
   data () {
     return {
-      fold: true,
+      folder: true,
       balls: [
         {
           id: 1,
@@ -300,7 +300,7 @@ export default {
       if (!this.totalCount) {
         return false
       }
-      let show = !this.fold
+      let show = !this.folder
       return show
     }
   },
@@ -309,7 +309,7 @@ export default {
       if (!this.totalCount) {
         return
       }
-      this.fold = !this.fold
+      this.folder = !this.folder
     },
     empty () {
       this.selectFoods.forEach((food) => {
