@@ -250,7 +250,9 @@ export default {
       this.$refs.food.show()
     },
     _drop (target) {
-      this.$refs.shopcart.drop(target)
+      this.$nextTick(() => {
+        this.$refs.shopcart.drop(target)
+      })
     }
   }
 }

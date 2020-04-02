@@ -39,12 +39,12 @@
       <div class="cart-decrease icon-remove_circle_outline" v-show="food.count>0" @click.stop="decreaseCount"></div>
     </transition>
     <div class="cart-count" v-show="food.count>0">{{food.count}}</div>
-    <div class="cart-add icon-add_circle" @click.stop="addCart"></div>
+    <div class="cart-add icon-add_circle" @click.stop="addCart($event)"></div>
   </div>
 </template>
 
 <script>
-import Vue from 'vue'
+// import Vue from 'vue'
 export default {
   props: {
     food: {
@@ -57,7 +57,7 @@ export default {
         return
       }
       if (!this.food.count) {
-        Vue.set(this.food, 'count', 1)
+        this.$set(this.food, 'count', 1)
       } else {
         this.food.count++
       }

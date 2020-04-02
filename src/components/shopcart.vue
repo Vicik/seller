@@ -86,25 +86,6 @@
         &.enough
           background: #00b43c
           color: #fff
-  .ball-container
-    z-index: 300
-    .ball
-      position: fixed
-      left: 32px
-      bottom: 22px
-      z-index: 200
-      // width: 16px
-      // height: 16px
-      // border-radius: 50%
-      // background: rgb(0, 160, 220)
-      &.drop-enter-active
-        transition: all 0.4s cubic-bezier(0.49,-0.29,0.75,0.41)
-      .inner
-        width: 16px
-        height: 16px
-        border-radius: 50%
-        background: rgb(0, 160, 220)
-        transition: all 0.4s linear
   .shopcart-list
     position: absolute
     top: 0
@@ -174,6 +155,19 @@
     opacity: 0
   &.fade-enter-to,&.fade-leave
     opacity: 1
+.ball-container
+  .ball
+    position: fixed
+    left: 32px
+    bottom: 22px
+    z-index: 200
+    transition: all 1s cubic-bezier(0.49,-0.29,0.75,0.41)
+    .inner
+      width: 16px
+      height: 16px
+      border-radius: 50%
+      background: rgb(0, 160, 220)
+      transition: all 1s linear
 </style>
 
 <template>
@@ -194,19 +188,8 @@
           <div class="pay" :class="payClass">{{payDesc}}</div>
         </div>
       </div>
-      <div class="ball-container">
-        <transition-group name="drop" tag="ul"  v-for="(ball, i) in balls" :key="i"
-          @before-enter="beforeEnter"
-          @enter="enter"
-          @after-enter="afterEnter"
-        >
-          <li class="ball" v-show="ball.show" :css="false" :key="ball.id">
-            <div class="inner inner-hook"></div>
-          </li>
-        </transition-group>
-      </div>
       <transition name="fold">
-        <div class="shopcart-list" v-show="listShow">
+        <div class="shopcart-list" v-show="fold">
           <div class="list-header">
             <h1 class="title">购物车</h1>
             <span class="empty" @click="empty">清空</span>
@@ -228,8 +211,22 @@
       </transition>
     </div>
     <transition name="fade">
-      <div class="list-mask" v-show="listShow" @click.stop.prevent="hideList"></div>
+      <div class="list-mask" v-show="fold" @click.stop.prevent="hideList"></div>
     </transition>
+    <!-- 购物车小球 -->
+    <div class="ball-container">
+      <div v-for="(ball, i) in balls" :key="i">
+        <transition
+          @before-enter="beforeEnter"
+          @enter="enter"
+          @after-enter="afterEnter"
+        >
+          <div class="ball" v-show="ball.show" :css="false">
+            <div class="inner inner-hook"></div>
+          </div>
+        </transition>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -255,7 +252,7 @@ export default {
   },
   data () {
     return {
-      fold: true,
+      fold: false,
       balls: [
         {
           id: 1,
@@ -283,7 +280,8 @@ export default {
           el: null
         }
       ],
-      dropBalls: []
+      dropBalls: [],
+      scroll: null
     }
   },
   components: {cartcontrol},
@@ -291,6 +289,17 @@ export default {
     selectedFoods (newFoods, oldFoods) {
       if (newFoods.length === 0) {
         this.fold = true
+      }
+    },
+    totalCount () {
+      if (this.totalCount > 0) {
+        if (!this.scroll) {
+          this.scroll = new BScroll(this.$refs.listContent, {
+            click: true
+          })
+        } else {
+          this.scroll.refresh()
+        }
       }
     }
   },
@@ -325,24 +334,6 @@ export default {
       } else {
         return 'enough'
       }
-    },
-    listShow () {
-      if (!this.totalCount) {
-        return false
-      }
-      if (this.totalCount > 0 && !this.fold) {
-        this.$nextTick(() => {
-          if (!this.scroll) {
-            this.scroll = new BScroll(this.$refs.listContent, {
-              click: true
-            });
-          } else {
-            this.scroll.refresh()
-          }
-        })
-        return true
-      }
-      return false
     }
   },
   methods: {
@@ -359,7 +350,7 @@ export default {
       this.selectFoods.forEach((food) => {
         food.count = 0
       })
-      this.fold = !this.fold
+      this.fold = false
     },
     pay () {
       if (this.totalPrice < this.minPrice) {
@@ -387,10 +378,8 @@ export default {
           let x = rect.left - 32
           let y = -(window.innerHeight - rect.top - 22)
           el.style.display = ''
-          el.style.webkitTransform = `translate3d(0,${y}px,0)`
-          el.style.transform = `translate3d(0, ${y}px, 0)`
-          let inner = el.getElementsByClassName('inner-hook')[0]
-          inner.style.webkitTransform = `translate3d(${x}px,0,0)`
+          el.style.transform = `translate3d(0,${y}px,0)`
+          let inner = el.querySelector('.inner-hook')
           inner.style.transform = `translate3d(${x}px, 0, 0)`
         }
       }
@@ -399,14 +388,11 @@ export default {
       /* eslint-disable no-unused-vars */
       let rf = el.offsetHeight
       this.$nextTick(() => {
-        el.style.webkitTransform = 'translate3d(0,0,0)'
         el.style.transform = 'translate3d(0, 0, 0)'
-        let inner = el.getElementsByClassName('inner-hook')[0]
-        inner.style.webkitTransform = 'translate3d(0,0,0)'
+        let inner = el.querySelector('.inner-hook')
         inner.style.transform = 'translate3d(0, 0, 0)'
-        // el.addEventListener('transitionend',done)
+        el.addEventListener('transitionend', done)
       })
-      done()
     },
     afterEnter (el) {
       let ball = this.dropBalls.shift()
